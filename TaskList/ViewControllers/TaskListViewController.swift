@@ -1,3 +1,4 @@
+
 //
 //  ViewController.swift
 //  TaskList
@@ -24,11 +25,11 @@ final class TaskListViewController: UITableViewController {
     }
     
     private func fetchData() {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let dataStore = DataStore.shared // Use the DataStore singleton
         let fetchRequest = ToDoTask.fetchRequest()
         
         do {
-            taskList = try appDelegate.persistentContainer.viewContext.fetch(fetchRequest)
+            taskList = try dataStore.persistentContainer.viewContext.fetch(fetchRequest)
         } catch {
             print(error)
         }
@@ -50,15 +51,15 @@ final class TaskListViewController: UITableViewController {
     }
     
     private func save(_ taskName: String) {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        let task = ToDoTask(context: appDelegate.persistentContainer.viewContext)
+        let dataStore = DataStore.shared // Use the DataStore singleton
+        let task = ToDoTask(context: dataStore.persistentContainer.viewContext)
         task.title = taskName
         taskList.append(task)
         
         let indexPath = IndexPath(row: taskList.count - 1, section: 0)
         tableView.insertRows(at: [indexPath], with: .automatic)
         
-        appDelegate.saveContext()
+        dataStore.saveContext()
     }
 }
 
@@ -76,6 +77,17 @@ extension TaskListViewController {
         cell.contentConfiguration = content
         return cell
     }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let taskToDelete = taskList[indexPath.row]
+            DataStore.shared.deleteTask(taskToDelete)
+            taskList.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        }
+    }
+    
+    
 }
 
 // MARK: - Setup UI
