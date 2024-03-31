@@ -86,8 +86,6 @@ extension TaskListViewController {
             tableView.deleteRows(at: [indexPath], with: .fade)
         }
     }
-    
-    
 }
 
 // MARK: - Setup UI
